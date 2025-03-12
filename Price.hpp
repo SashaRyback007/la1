@@ -9,10 +9,9 @@ struct Price {
     short int kopecks;
     
 };
-Price add(Price a,Price b);
-Price mult(Price a,int gnt);
-Price roundTo10(Price m);
-void printPrice(Price m);
-void processFile();
+void add(Price a, Price b, Price &result);
+void mult(Price p, int quantity, Price &result);
+void roundTo10Kop(Price &p);
+void processFile(); 
 #endif
 

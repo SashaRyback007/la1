@@ -1,65 +1,58 @@
 #include <iostream>
 #include <fstream>
-
-struct Price
-{
-    int hryvnias;
-    short int kopecks;
-};
-
-Price add(Price result, Price other) {
-    int totalKopecks = (result.hryvnias * 100 + result.kopecks) + 
-                       (other.hryvnias * 100 + other.kopecks);
-    result.hryvnias = totalKopecks / 100;
-    result.kopecks = totalKopecks % 100;
-    return result;
-}
+#include "Price.hpp" 
+using namespace std;
 
 
-
-Price mult(Price result, int quantity) {
-    int totalKopecks = (result.hryvnias * 100 + result.kopecks) * quantity;
-    result.hryvnias = totalKopecks / 100;
-    result.kopecks = totalKopecks % 100;
-    return result;
-}
-
-void roundToNearest10(Price& result) {
-    int roundedKopecks = ((result.kopecks + 5) / 10) * 10;
-    if (roundedKopecks == 100) {
-        result.hryvnias += 1;
-        result.kopecks = 0;
-    } else {
-        result.kopecks = roundedKopecks;
+void add(Price a, Price b, Price &result) {
+    result.hryvnias = a.hryvnias + b.hryvnias;
+    result.kopecks = a.kopecks+ b.kopecks;
+    if (result.kopecks >= 100) { 
+        result.hryvnias++;
+        result.kopecks -= 100;
     }
 }
 
 
-void printPrice(Price result) {
-    std::cout << result.hryvnias << " грн " << result.kopecks << " коп" << std::endl;
+void mult(Price p, int quantity, Price &result) {
+    int total = (p.hryvnias * 100 + p.kopecks) * quantity;
+    result.hryvnias = total / 100;
+    result.kopecks = total % 100;
 }
+
+
+void roundTo10Kop(Price &p) {
+    int total = (p.hryvnias * 100 + p.kopecks + 5) / 10 * 10;
+    p.hryvnias = total / 100;
+    p.kopecks = total % 100;
+}
+
 
 void processFile() {
     std::ifstream file("C:\\Projects\\la1\\prices.txt");
-    if (!file) {
-        std::cerr << "Не вдалося відкрити файл!" << std::endl;
+    if (!file) { 
+        cout << "Помилка відкриття файлу!" << endl;
+        return;
     }
 
-    Price total = {0, 0};
+    Price total = {0, 0};  
+    int h, k, q;
 
-    int hryvnias, kopecks, quantity;
-    while (file >> hryvnias >> kopecks >> quantity) {
-        Price item = {hryvnias, kopecks};
-        total = add(total, mult(item, quantity));
+    cout << "Чек:\n";
+
+    while (file >> h >> k >> q) { 
+        Price temp = {h, k}; 
+        Price itemTotal;
+        mult(temp, q, itemTotal); 
+        add(total, itemTotal, total); 
+       
+        
+        cout << q << " шт. × " << h << " грн " << k << " коп = " 
+             << itemTotal.hryvnias << " грн " << itemTotal.kopecks << " коп\n";
     }
+
+    roundTo10Kop(total);
     
-    file.close();
-
-    std::cout << "Загальна сума: ";
-    printPrice(total);
-
-    roundToNearest10(total);
-    std::cout << "Сума до оплати (після заокруглення): ";
-    printPrice(total);
-
+   
+    cout << "Загальна сума (після округлення): " << total.hryvnias << " грн " << total.kopecks << " коп\n";
 }
